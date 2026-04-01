@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "firebase": "^12.11.0",
+    "serialport": "^13.0.0"
+  }
+}
