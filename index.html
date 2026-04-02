@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <title>HydraTrack — Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="waterCanvas" class="water-bg"></canvas>
+
+<!-- STARTUP LOADER -->
+<div id="ht-loader" class="ht-loader">
+  <div class="ht-loader-grid"></div>
+  <div class="ht-loader-ripple ht-loader-ripple-1"></div>
+  <div class="ht-loader-ripple ht-loader-ripple-2"></div>
+  <div class="ht-loader-core">
+    <div class="ht-loader-orb-wrap">
+      <div class="ht-loader-orb-glow"></div>
+      <div class="ht-loader-orb">
+        <svg width="44" height="44" viewBox="0 0 40 40" fill="none">
+          <path d="M20 3C20 3 7 14 7 22C7 29.7 13 36 20 36C27 36 33 29.7 33 22C33 14 20 3 20 3Z" fill="url(#ld1)"/>
+          <defs>
+            <linearGradient id="ld1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00d4ff"/>
+              <stop offset="100%" stop-color="#0055cc"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="ht-loader-ring ht-loader-ring-a"></div>
+      <div class="ht-loader-ring ht-loader-ring-b"></div>
+    </div>
+
+    <div class="ht-loader-brand">
+      <div class="ht-loader-title">HYDRATRACK</div>
+      <div class="ht-loader-subtitle">SMART WATER QUALITY MONITORING SYSTEM</div>
+    </div>
+
+    <div class="ht-loader-progress-wrap">
+      <div class="ht-loader-progress-bar"></div>
+    </div>
+
+    <div class="ht-loader-status">
+      <span class="ht-loader-dot"></span>
+      Initializing sensors, dashboard, and live data...
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-icon">
+        <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
+          <path d="M20 3C20 3 7 14 7 22C7 29.7 13 36 20 36C27 36 33 29.7 33 22C33 14 20 3 20 3Z" fill="url(#lg1)"/>
+          <defs><linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#0055cc"/></linearGradient></defs>
+        </svg>
+      </div>
+      <div>
+        <div class="login-title">HYDRATRACK</div>
+      </div>
+    </div>
+    <div class="login-divider"></div>
+    <div class="form-group">
+      <label>Username</label>
+      <div class="input-wrapper">
+        <svg class="input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <input type="text" id="usernameInput" placeholder="admin" autocomplete="off" onkeydown="if(event.key==='Enter')attemptLogin()"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <div class="input-wrapper">
+        <svg class="input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="off" onkeydown="if(event.key==='Enter')attemptLogin()"/>
+        <button class="toggle-pw" onclick="togglePassword()" tabindex="-1" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="login-error" id="loginError">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Invalid credentials. Please try again.
+    </div>
+    <button class="login-btn" onclick="attemptLogin()" type="button">
+      <span>SIGN IN</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+    <div class="login-hint">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      Default: <strong>admin</strong> / <strong>admin123</strong>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app-shell" id="appShell" style="display:none;">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg width="24" height="24" viewBox="0 0 40 40" fill="none">
+        <path d="M20 3C20 3 7 14 7 22C7 29.7 13 36 20 36C27 36 33 29.7 33 22C33 14 20 3 20 3Z" fill="url(#lg2)"/>
+        <defs><linearGradient id="lg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00d4ff"/><stop offset="100%" stop-color="#0055cc"/></linearGradient></defs>
+      </svg>
+      <span class="sidebar-logo-text">HYDRATRACK</span>
+    </div>
+    <div class="sidebar-section-label">NAVIGATION</div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" id="nav-charts" onclick="showView('charts')">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+        <span>Graph</span>
+        <div class="nav-active-bar"></div>
+      </a>
+      <a class="nav-item" id="nav-recommendations" onclick="showView('recommendations')">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+        <span>Recommendations</span>
+        <div class="nav-active-bar"></div>
+      </a>
+      <a class="nav-item" id="nav-settings" onclick="showView('settings')">
+        <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+        <span>Settings</span>
+        <div class="nav-active-bar"></div>
+      </a>
+    </nav>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user">
+        <div class="user-avatar" id="user-avatar">
+          <img src="lebron.png" alt="Admin"/>
+        </div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Administrator</div>
+          <div class="user-role">System Admin</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="logout()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Sidebar backdrop (mobile) -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleMobileSidebar()"></div>
+
+  <!-- MAIN -->
+  <main class="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <!-- Burger — mobile only -->
+        <button class="topbar-icon-btn burger-btn" style="display:none;" onclick="toggleMobileSidebar()" title="Menu">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="page-title-wrap">
+          <h1 class="page-title" id="pageTitle">Graph</h1>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-update-info">
+          <span class="update-label">Next update in</span>
+          <span class="update-countdown" id="updateCountdown">10s</span>
+        </div>
+        <button class="topbar-icon-btn alert-notif-btn active" id="alertNotifBtn" onclick="toggleAlertNotif()" title="Alert Notifications: ON">
+          <svg id="alertNotifIconOn" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <svg id="alertNotifIconOff" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+        </button>
+        <button class="topbar-icon-btn sound-btn" id="soundBtn" onclick="toggleSound()" title="Sound Alerts: ON">
+          <svg id="soundIconOn" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          <svg id="soundIconOff" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+        </button>
+        <button class="topbar-icon-btn theme-btn" id="themeBtn" onclick="toggleTheme()" title="Switch to Light Mode">
+          <svg id="iconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg id="iconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+        <!-- USB SERIAL CONNECT BUTTON -->
+        <button class="topbar-icon-btn serial-connect-btn" id="serialConnectBtn"
+                onclick="connectSerial()" title="Connect Arduino via USB Serial"
+                style="display:flex;align-items:center;gap:6px;padding:6px 12px;min-width:fit-content;border-radius:10px;background:rgba(0,195,255,0.08);border:1px solid rgba(0,195,255,0.20);color:var(--text);font-size:0.72rem;letter-spacing:1px;font-weight:600;cursor:pointer;transition:all 0.2s;">
+          <span id="serialDot" style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.25);display:inline-block;flex-shrink:0;transition:background 0.3s;"></span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="6" rx="1"/><path d="M17 8v2a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8"/><path d="M12 18v4M8 18v4M16 18v4"/><rect x="5" y="14" width="14" height="4" rx="1"/></svg>
+          <span id="serialLabel">CONNECT SENSOR</span>
+        </button>
+        <style>
+          #serialConnectBtn.connected {
+            background: rgba(0,255,180,0.10) !important;
+            border-color: rgba(0,255,180,0.35) !important;
+            color: #00ffcc !important;
+          }
+          #serialConnectBtn:hover { opacity: 0.80; }
+        </style>
+        <div id="time" class="topbar-clock"></div>
+      </div>
+    </div>
+
+    <!-- ALERT BANNER -->
+    <div class="alert-banner" id="alertBanner" style="display:none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="alertBannerText"></span>
+      <button class="alert-close" onclick="document.getElementById('alertBanner').style.display='none'">✕</button>
+    </div>
+
+    <!-- VIEW: GRAPH -->
+    <div id="view-charts" class="view active">
+      <div class="gauge-grid">
+        <div class="gauge-card clickable-card" data-type="bacteria">
+          <div class="gauge-card-header">
+            <div class="gauge-title-group">
+              <span class="gauge-dot" id="tdsDot"></span>
+              <span class="gauge-title">TDS Sensor</span>
+            </div>
+            <span class="gauge-badge">Live</span>
+          </div>
+          <div class="gauge-wrap">
+            <canvas id="tdsGauge"></canvas>
+            <div class="gauge-value-wrap">
+              <span class="gauge-value" id="tdsValue">0</span>
+              <span class="gauge-unit">ppm</span>
+            </div>
+            <div class="gauge-labels"><span>0</span><span>500</span></div>
+          </div>
+          <div class="gauge-status" id="tdsStatus">—</div>
+          <div class="gauge-progress-wrap">
+            <div class="gauge-progress-bar" id="tdsProgress"></div>
+          </div>
+        </div>
+
+        <div class="gauge-card clickable-card" data-type="water">
+          <div class="gauge-card-header">
+            <div class="gauge-title-group">
+              <span class="gauge-dot" id="turbDot"></span>
+              <span class="gauge-title">Turbidity Sensor</span>
+            </div>
+            <span class="gauge-badge">Live</span>
+          </div>
+
+          <!-- Water clarity visual -->
+          <div style="display:flex;flex-direction:column;align-items:center;padding:16px 0 8px;gap:14px;">
+
+            <!-- Animated beaker + live number overlay -->
+            <div style="display:flex;align-items:center;gap:18px;">
+              <div style="position:relative;width:80px;height:110px;">
+                <div style="position:absolute;inset:0;border:2px solid rgba(0,195,255,0.18);border-top:none;border-radius:0 0 20px 20px;overflow:hidden;background:rgba(0,0,0,0.3);">
+                  <div id="wFill" style="position:absolute;bottom:0;left:0;right:0;height:82%;transition:background 1s ease;background:rgba(0,220,200,0.55);">
+                    <div style="position:absolute;top:-10px;left:-18px;width:130px;height:22px;border-radius:50%;opacity:0.45;animation:wvA 2.2s ease-in-out infinite;background:inherit;"></div>
+                    <div style="position:absolute;top:-6px;left:-8px;width:118px;height:16px;border-radius:50%;opacity:0.3;animation:wvA 2.8s ease-in-out infinite reverse;background:inherit;"></div>
+                  </div>
+                  <div id="wParticles" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;"></div>
+                </div>
+                <div style="position:absolute;top:0;left:-3px;right:-3px;height:5px;border-radius:3px 3px 0 0;background:rgba(0,195,255,0.12);border:2px solid rgba(0,195,255,0.18);"></div>
+              </div>
+
+              <!-- Live numeric readout -->
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <div style="font-size:0.62rem;letter-spacing:2px;color:rgba(255,255,255,0.35);font-weight:600;">RAW VALUE</div>
+                <div style="display:flex;align-items:baseline;gap:3px;">
+                  <span id="turbidityValue" style="font-size:2.4rem;font-weight:800;font-family:'Orbitron',monospace;color:#00ffcc;line-height:1;transition:color 0.4s;">0</span>
+                  <span style="font-size:0.75rem;color:rgba(255,255,255,0.4);font-weight:600;">%</span>
+                </div>
+                <div id="turbidityStatus" style="font-size:0.65rem;letter-spacing:1.5px;font-weight:700;color:#00ffcc;transition:color 0.4s;">CRYSTAL CLEAR</div>
+                <div style="font-size:0.55rem;color:rgba(255,255,255,0.25);margin-top:2px;">from sensor</div>
+              </div>
+            </div>
+
+            <!-- 3 state pills -->
+            <div style="display:flex;flex-direction:column;gap:7px;width:100%;padding:0 14px;">
+              <div id="pillClean"  style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;border:1px solid rgba(0,255,180,0.15);background:rgba(0,255,180,0.04);transition:all 0.4s;opacity:0.25;">
+                <span>💧</span><span style="font-size:0.78rem;font-weight:700;letter-spacing:3px;color:#00ffcc;">CLEAN</span>
+              </div>
+              <div id="pillCloudy" style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;border:1px solid rgba(255,200,0,0.15);background:rgba(255,200,0,0.04);transition:all 0.4s;opacity:0.25;">
+                <span>🌫️</span><span style="font-size:0.78rem;font-weight:700;letter-spacing:3px;color:#ffcc00;">CLOUDY</span>
+              </div>
+              <div id="pillDirty"  style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;border:1px solid rgba(255,60,60,0.15);background:rgba(255,60,60,0.04);transition:all 0.4s;opacity:0.25;">
+                <span>⚠️</span><span style="font-size:0.78rem;font-weight:700;letter-spacing:3px;color:#ff4d4d;">DIRTY</span>
+              </div>
+            </div>
+          </div>
+          <div class="gauge-progress-wrap">
+            <div class="gauge-progress-bar" id="turbProgress"></div>
+          </div>
+
+          <style>
+            @keyframes wvA{0%,100%{transform:translateY(0) scaleX(1)}50%{transform:translateY(4px) scaleX(1.04)}}
+            @keyframes floatUp{0%{transform:translateY(0);opacity:0.8}100%{transform:translateY(-100px);opacity:0}}
+          </style>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: RECOMMENDATIONS -->
+    <div id="view-recommendations" class="view">
+      <div class="rec-layout">
+
+        <!-- Top: Live recommendation -->
+        <div class="rec-card" id="recommendationBox">
+          <div class="rec-header">
+            <div class="rec-pulse-wrap">
+              <div class="rec-pulse"></div>
+              <div class="rec-pulse-ring"></div>
+            </div>
+            <div class="rec-header-text">
+              <h3 class="rec-title">AI System Recommendation</h3>
+              <span class="rec-live-badge">LIVE</span>
+            </div>
+          </div>
+          <p id="aiMessage" class="rec-message">System initializing...</p>
+          <div class="rec-footer">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            Auto-updates every 10 seconds
+          </div>
+        </div>
+
+        <!-- Bottom: Detailed Analysis Expand Card -->
+        <div class="analysis-card">
+          <div class="analysis-card-header">
+            <div class="analysis-header-left">
+              <div class="analysis-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+              </div>
+              <div>
+                <div class="analysis-title">AI Detailed Analysis</div>
+                <div class="analysis-sub">Water Quality Reference Guide</div>
+              </div>
+            </div>
+            <button class="analysis-expand-btn" id="analysisExpandBtn" onclick="toggleAnalysis()">
+              <svg id="expandIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              <span id="expandLabel">Expand</span>
+            </button>
+          </div>
+
+          <!-- Collapsible body -->
+          <div class="analysis-body" id="analysisBody">
+
+            <!-- TDS Section -->
+            <div class="analysis-section">
+              <div class="analysis-section-title">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                TDS — Total Dissolved Solids
+              </div>
+              <div class="analysis-table">
+                <div class="at-row header">
+                  <span>Range (ppm)</span><span>Level</span><span>Action</span>
+                </div>
+                <div class="at-row"><span class="at-range" style="color:#00ccee">0 – 49</span><span class="at-level" style="color:#00ccee">Ideal</span><span class="at-action">Safe to drink — RO/microfiltration</span></div>
+                <div class="at-row"><span class="at-range" style="color:#0088cc">50 – 99</span><span class="at-level" style="color:#0088cc">Good</span><span class="at-action">Carbon filtration / mountain springs</span></div>
+                <div class="at-row"><span class="at-range" style="color:#3355cc">100 – 199</span><span class="at-level" style="color:#3355cc">Hard Water</span><span class="at-action">Safe but may affect taste & appliances</span></div>
+                <div class="at-row"><span class="at-range" style="color:#aa44cc">200 – 299</span><span class="at-level" style="color:#aa44cc">Marginal</span><span class="at-action">Consider filtration system</span></div>
+                <div class="at-row"><span class="at-range" style="color:#ffcc00">300 – 399</span><span class="at-level" style="color:#ffcc00">High</span><span class="at-action">Not ideal — use filtered water</span></div>
+                <div class="at-row"><span class="at-range" style="color:#ff6600">400 – 499</span><span class="at-level" style="color:#ff6600">Very High</span><span class="at-action">Contamination risk — treat immediately</span></div>
+                <div class="at-row"><span class="at-range" style="color:#ff2222">500+</span><span class="at-level" style="color:#ff2222">Unsafe</span><span class="at-action">US EPA max — do not consume</span></div>
+              </div>
+            </div>
+
+            <div class="analysis-divider"></div>
+
+            <!-- Turbidity Section -->
+            <div class="analysis-section">
+              <div class="analysis-section-title">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
+                Turbidity — Water Clarity
+              </div>
+              <div class="analysis-table">
+                <div class="at-row header">
+                  <span>Range (%)</span><span>Level</span><span>Action</span>
+                </div>
+                <div class="at-row"><span class="at-range" style="color:#00ffcc">0 – 20</span><span class="at-level" style="color:#00ffcc">Crystal Clear</span><span class="at-action">Excellent water quality — safe to drink</span></div>
+                <div class="at-row"><span class="at-range" style="color:#33cc99">21 – 50</span><span class="at-level" style="color:#33cc99">Normal</span><span class="at-action">Operating within safe parameters</span></div>
+                <div class="at-row"><span class="at-range" style="color:#ffcc00">51 – 75</span><span class="at-level" style="color:#ffcc00">Cloudy</span><span class="at-action">Water is cloudy — inspect and clean filter</span></div>
+                <div class="at-row"><span class="at-range" style="color:#ff4d4d">76 – 100</span><span class="at-level" style="color:#ff4d4d">Contaminated</span><span class="at-action">High turbidity — do not consume, treat water</span></div>
+              </div>
+            </div>
+
+            <div class="analysis-divider"></div>
+
+            <!-- Live snapshot -->
+            <div class="analysis-section">
+              <div class="analysis-section-title">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Live Sensor Snapshot
+              </div>
+              <div class="snapshot-grid">
+                <div class="snapshot-item">
+                  <div class="snap-label">TDS Reading</div>
+                  <div class="snap-value" id="snapTDS">— ppm</div>
+                  <div class="snap-status" id="snapTDSStatus">—</div>
+                </div>
+                <div class="snapshot-item">
+                  <div class="snap-label">Turbidity</div>
+                  <div class="snap-value" id="snapTurb">— %</div>
+                  <div class="snap-status" id="snapTurbStatus">—</div>
+                </div>
+                <div class="snapshot-item">
+                  <div class="snap-label">Overall Status</div>
+                  <div class="snap-value" id="snapOverall">—</div>
+                  <div class="snap-status" id="snapOverallSub">Monitoring active</div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /analysis-body -->
+        </div><!-- /analysis-card -->
+
+      </div><!-- /rec-layout -->
+    </div>
+
+    <!-- VIEW: SETTINGS -->
+    <div id="view-settings" class="view">
+      <div class="settings-container">
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <div class="settings-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <div class="settings-card-title">Admin Credentials</div>
+              <div class="settings-card-sub">Logged in as: <span id="set-current-user" class="set-username-badge">admin</span></div>
+            </div>
+          </div>
+          <div class="settings-divider"></div>
+          <div class="settings-section-label">Change Username</div>
+          <div class="settings-form-group">
+            <label>New Username</label>
+            <div class="settings-input-wrap">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="set-new-username" placeholder="Leave blank to keep current" autocomplete="off"/>
+            </div>
+          </div>
+          <div class="settings-section-label" style="margin-top:18px;">Change Password</div>
+          <div class="settings-form-group">
+            <label>New Password</label>
+            <div class="settings-input-wrap">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="set-new-password" placeholder="Leave blank to keep current" autocomplete="new-password"/>
+            </div>
+          </div>
+          <div class="settings-form-group">
+            <label>Confirm New Password</label>
+            <div class="settings-input-wrap">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="set-confirm-password" placeholder="Re-enter new password" autocomplete="new-password"/>
+            </div>
+          </div>
+          <div class="settings-divider"></div>
+          <div class="settings-section-label">Confirm with Current Password</div>
+          <div class="settings-form-group">
+            <label>Current Password <span class="required-badge">required</span></label>
+            <div class="settings-input-wrap">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <input type="password" id="set-current-password" placeholder="Enter current password to save" autocomplete="current-password"/>
+            </div>
+          </div>
+          <div class="settings-feedback" id="settings-error" style="display:none;"></div>
+          <div class="settings-feedback settings-success" id="settings-success" style="display:none;"></div>
+          <button class="settings-save-btn" onclick="saveCredentials()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="aiModal">
+  <div class="modal-content">
+    <h3>Detailed Analysis</h3>
+    <p id="aiDetails"></p>
+    <button onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
